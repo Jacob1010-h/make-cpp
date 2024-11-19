@@ -1,0 +1,53 @@
+# Compiler
+CXX = g++
+
+# Compiler flags
+CXXFLAGS = -Wall -g -MMD
+
+# Linker flags for SFML
+LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
+
+# Automatically find all .cpp files in the current directory
+SRCS = $(wildcard *.cpp)
+
+# Object files
+OBJS = $(SRCS:.cpp=.o)
+
+# Dependency files
+DEPS = $(OBJS:.o=.d)
+
+# Executable name based on the directory name
+EXEC = $(notdir $(CURDIR)).exe
+
+# Rule to build the executable
+$(EXEC): $(OBJS)
+	$(CXX) -o $(EXEC) $(OBJS) $(LDFLAGS)
+
+# Rule to build the object files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Include the dependency files
+-include $(DEPS)
+
+# Default rule to build the executable
+all: $(EXEC)
+	@echo "Built $(EXEC)"
+
+# Clean rule to remove generated files
+clean:
+	@echo Cleaning up...
+	@if [ "$(OBJS)" != "" ] && ls $(OBJS) 1> /dev/null 2>&1; then \
+		rm -f $(OBJS) && echo Deleted object files; \
+	fi
+	@if [ "$(DEPS)" != "" ] && ls $(DEPS) 1> /dev/null 2>&1; then \
+		rm -f $(DEPS) && echo Deleted dependency files; \
+	fi
+	@if [ -e $(EXEC) ]; then \
+		rm -f $(EXEC) && echo Deleted executable; \
+	fi
+	@if [ ! -e $(OBJS) ] && [ ! -e $(EXEC) ] && [ ! -e $(DEPS) ]; then \
+		echo Nothing to clean up; \
+	fi
+
+.PHONY: all clean
